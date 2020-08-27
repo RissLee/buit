@@ -40,6 +40,8 @@ export default async (pkgPath: string, { watch, target, cssModules, cssModulesPr
     config.target = target;
   }
 
+  logger.title('target: ' + config.target, cssModules ? 'with cssModules' : '');
+
   return babel({
     cwd,
     watch,

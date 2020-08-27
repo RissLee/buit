@@ -11,14 +11,17 @@ program
   .command('build [path]')
   .description(`build src dir, if assign path, will transform './{path}/src' -> './{path}/lib'`)
   .option('-w, --watch', 'watch change')
-  .option('-t, --target', 'target node or browser, default: node')
-  .option('-c, --cssModules [generateScopedName]', 'open cssModules with generateScopedName, default: [local]__[hash]')
+  .option('-t, --target <target>', 'target node or browser, default: node')
+  .option(
+    '-c, --cssModules [generateScopedName]',
+    'string, open cssModules with generateScopedName, or true for use default: [local]__[hash]'
+  )
   .option(
     '-cp, --cssModulesPrefix <prefix>',
     `open cssModules and generateScopedName prefix short for [prefix]-[local]`
   )
   .action((path, { watch, target, cssModules, cssModulesPrefix }) => {
-    build(path, { watch, cssModules, cssModulesPrefix });
+    build(path, { watch, target, cssModules, cssModulesPrefix });
   });
 
 program.parse(process.argv);
