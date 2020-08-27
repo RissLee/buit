@@ -3,8 +3,10 @@
   "version": "0.0.4",
   "description": "build package",
   "keywords": [
-    "bablel",
-    "compile"
+    "babel",
+    "compile",
+    "typescript",
+    "cssModules"
   ],
   "author": "ruiliang.li <risslee@foxmail.com>",
   "homepage": "https://github.com/RissLee/buit",
