@@ -1,13 +1,13 @@
 {
   "name": "buit",
-  "version": "0.0.3",
-  "description": "build package ",
+  "version": "0.0.4",
+  "description": "build package",
   "keywords": [
     "bablel",
     "compile"
   ],
   "author": "ruiliang.li <risslee@foxmail.com>",
-  "homepage": "",
+  "homepage": "https://github.com/RissLee/buit",
   "license": "ISC",
   "main": "lib/index.js",
   "bin": {
@@ -22,7 +22,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "http://gitlab.envision-group.com/kbse/kbse-packages.git"
+    "url": "https://github.com/RissLee/buit.git"
   },
   "scripts": {
     "build": "buit build",
