@@ -96,7 +96,10 @@ export default async function (opts: {
 
     return new Promise((resolve) => {
       vfs
-        .src(patterns)
+        .src(patterns, {
+          allowEmpty: true,
+          base: srcPath,
+        })
         .pipe(
           gulpIf(
             !!skipErrorCrash,
@@ -260,5 +263,4 @@ export default async function (opts: {
       }
     });
   }
-
 }
