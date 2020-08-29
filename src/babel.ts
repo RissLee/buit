@@ -226,7 +226,7 @@ export default async function (opts: {
   }
 
   const ignoredFiles = ['mdx', 'md', '(test|e2e|spec).(js|jsx|ts|tsx)'];
-  const ignoredDirectories = ['__test__', 'demos', 'fixtures'];
+  const ignoredDirectories = ['__test__', 'demos', 'fixtures', '.*'];
   const patterns = [
     join(srcPath, '**/*'),
     ...ignoredDirectories.map((d) => `!${join(srcPath, `**/${d}{,/**}`)}`),
