@@ -85,7 +85,7 @@ export function getBabelConfig({ config, moduleType }: { config: IConfig; module
   };
   return {
     presets: [[require.resolve('@umijs/babel-preset-umi'), presetOptions], ...(config.extraBabelPresets || [])],
-    plugins: [...(config.extraBabelPlugins || [])],
+    plugins: [transformImportLess2Css, ...(config.extraBabelPlugins || [])],
   };
 }
 
@@ -114,4 +114,20 @@ export function getPostcssPlugins({ config, cssJsonCache }: { config: IConfig; c
     );
   }
   return plugins;
+}
+
+function transformImportLess2Css() {
+  return {
+    name: 'transform-import-less-to-css',
+    visitor: {
+      ImportDeclaration(path: string, source: {}) {
+        const re = /\.less$/;
+        // @ts-ignore
+        if (re.test(path.node.source.value)) {
+        // @ts-ignore
+          path.node.source.value = path.node.source.value.replace(re, '.css');
+        }
+      },
+    },
+  };
 }
