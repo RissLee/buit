@@ -1,6 +1,6 @@
 {
   "name": "buit",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "build package",
   "keywords": [
     "babel",
@@ -19,9 +19,6 @@
     "lib": "lib",
     "test": "__tests__"
   },
-  "files": [
-    "lib"
-  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/RissLee/buit.git"
