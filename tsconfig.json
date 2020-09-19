@@ -15,10 +15,21 @@
     "allowJs": true,
     "skipLibCheck": true,
     "experimentalDecorators": true,
+    "declaration": true,
     "strict": true,
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-  "exclude": ["node_modules", "build", "dist", "lib", "scripts", "webpack", "jest"]
+  "exclude": [
+    "node_modules",
+    "build",
+    "dist",
+    "lib",
+    "scripts",
+    "webpack",
+    "jest",
+    "__tests__",
+    "bin"
+  ]
 }
