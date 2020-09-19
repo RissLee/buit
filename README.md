@@ -15,7 +15,7 @@ yarn add buit
 
 ### build
 
-```bash
+```b
 buit build
 ```
 
