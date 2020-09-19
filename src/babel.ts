@@ -11,7 +11,7 @@ import gulpPostcss from 'gulp-postcss';
 import gulpPlumber from 'gulp-plumber';
 import through from 'through2';
 import chokidar from 'chokidar';
-import lodash from 'lodash';
+import lodash, { omit } from 'lodash';
 import rimraf from 'rimraf';
 import sourcemaps from 'gulp-sourcemaps';
 import { logger } from './logger';
@@ -33,7 +33,7 @@ export default async function (opts: {
   const targetDir = moduleType === 'esm' ? 'es' : 'lib';
   const targetPath = join(cwd, targetDir);
 
-  const tsProject = gulpTs.createProject({ ...tsConfig.compilerOptions, outDir: '' } || {});
+  const tsProject = gulpTs.createProject({ ...omit(tsConfig.compilerOptions, 'ourDir') } || {});
 
   rimraf.sync(targetPath);
 

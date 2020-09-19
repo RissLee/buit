@@ -30,6 +30,7 @@
     "webpack",
     "jest",
     "__tests__",
-    "bin"
+    "bin",
+    "fixtures"
   ]
 }
