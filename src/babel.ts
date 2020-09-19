@@ -33,7 +33,7 @@ export default async function (opts: {
   const targetDir = moduleType === 'esm' ? 'es' : 'lib';
   const targetPath = join(cwd, targetDir);
 
-  const tsProject = gulpTs.createProject({ ...omit(tsConfig.compilerOptions, 'ourDir') } || {});
+  const tsProject = gulpTs.createProject({ ...omit(tsConfig.compilerOptions, 'outDir') } || {});
 
   rimraf.sync(targetPath);
 
