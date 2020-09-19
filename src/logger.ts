@@ -18,6 +18,6 @@ export const logger = {
     this.colorLog(colors.yellow, ...text);
   },
   colorLog(color: Color, ...text: string[]) {
-    console.log(`[${colors.gray(moment().format('hh:mm:ss'))}]`, ...text.map((t) => color(t)));
+    console.log(`[${colors.gray(moment().format('HH:mm:ss'))}]`, ...text.map((t) => color(t)));
   },
 };

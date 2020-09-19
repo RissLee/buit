@@ -1,13 +1,13 @@
 import { existsSync, statSync } from 'fs-extra';
-import path, { join, relative, dirname } from 'path';
+import { join, relative } from 'path';
 import vfs from 'vinyl-fs';
-import Vinyl from 'vinyl';
 import gulpBabel from 'gulp-babel';
 import gulpIf from 'gulp-if';
 import gulpTs from 'gulp-typescript';
 import { TsConfig } from 'gulp-typescript/release/types';
-import gulpLess from 'gulp-less';
-import postcss from 'postcss';
+import postcssLess from 'postcss-less';
+import postcssScss from 'postcss-scss';
+import gulpPostcss from 'gulp-postcss';
 import gulpPlumber from 'gulp-plumber';
 import through from 'through2';
 import chokidar from 'chokidar';
@@ -33,7 +33,7 @@ export default async function (opts: {
   const targetDir = moduleType === 'esm' ? 'es' : 'lib';
   const targetPath = join(cwd, targetDir);
 
-  const tsProject = gulpTs.createProject(tsConfig.compilerOptions || {});
+  const tsProject = gulpTs.createProject({ ...tsConfig.compilerOptions, outDir: '' } || {});
 
   rimraf.sync(targetPath);
 
@@ -77,10 +77,6 @@ export default async function (opts: {
     patterns: string[];
     skipErrorCrash?: boolean; // error happen, not crash,use for watch mode
   }) {
-    const lessConfig = {
-      paths: [join(cwd, 'node_modules'), cwd],
-      javascriptEnabled: true,
-    };
     const browserBabelConfig = getBabelConfig({
       config: { ...config, target: 'browser' },
       moduleType,
@@ -90,9 +86,7 @@ export default async function (opts: {
       moduleType,
     });
 
-    const postcssPlugins = getPostcssPlugins({ config, cssJsonCache });
-
-    const files: Vinyl[] = [];
+    const postcssPlugins = getPostcssPlugins(config);
 
     return new Promise((resolve) => {
       vfs
@@ -109,115 +103,39 @@ export default async function (opts: {
                 // @ts-ignore
                 this.emit('end');
               },
-            })
-          )
+            }),
+          ),
         )
-        .pipe(
-          gulpIf(
-            isLessFile,
-            through.obj((file, enc, cb) => {
-              // replace @import "~"
-              const reg = /@import\s+['"]~(.+)['"]/gi;
-              const contents = file.contents.toString();
-              if (reg.test(contents)) {
-                file.contents = Buffer.from(contents.replace(reg, "@import '$1'"));
-              }
-              cb(null, file);
-            })
-          )
-        )
-        .pipe(gulpIf(isLessFile, gulpLess(lessConfig)))
-        .pipe(
-          through.obj(
-            function (file, enc, cb) {
-              files.push(file);
-              cb();
-            },
-            async function (cb) {
-              // postcss cssModule first
-              await Promise.all(
-                files.filter(isCssFile).map(async (f) => {
-                  const result = await postcss(postcssPlugins).process(f.contents!, { from: f.path });
-                  f.contents = Buffer.from(result.css);
-                })
-              );
-              files.forEach((f) => this.push(f));
-              cb();
-            }
-          )
-        )
+        // .pipe(
+        //   gulpIf(
+        //     isLessFile,
+        //     through.obj((file, enc, cb) => {
+        //       // replace @import "~"
+        //       const reg = /@import\s+['"]~(.+)['"]/gi;
+        //       const contents = file.contents.toString();
+        //       if (reg.test(contents)) {
+        //         file.contents = Buffer.from(contents.replace(reg, "@import '$1'"));
+        //       }
+        //       cb(null, file);
+        //     }),
+        //   ),
+        // )
+        // .css .less .scss
+        .pipe(gulpIf(isCssFile, gulpPostcss(postcssPlugins)))
+        // @ts-ignore
+        .pipe(gulpIf(isLessFile, gulpPostcss(postcssPlugins, { syntax: postcssLess })))
+        // @ts-ignore
+        .pipe(gulpIf(isScssFile, gulpPostcss(postcssPlugins, { syntax: postcssScss })))
+        // .ts .tsx .js .jsx
         .pipe(gulpIf((f) => !!config.sourcemaps && isTsOrJsFile(f), sourcemaps.init()))
-        .pipe(
-          gulpIf(
-            (f: Vinyl) => isTsOrJsFile(f) && !!config.cssModules,
-            through.obj((file, enc, cb) => {
-              let contents: string = file.contents.toString();
-
-              const cssReg = /import (.+) from\s+['"]((.+)\.(le|sc|sa|c)ss)['"]/gi;
-              const imports = contents.match(cssReg);
-              if (!imports?.length) {
-                cb(null, file);
-                return;
-              }
-              const cssJsonMapList: { varName: string; json: object; filePath: string; source: string }[] = [];
-              for (const cssImport of imports) {
-                const formatImport = cssImport.replace(/\s+/, ' ').replace(/['"]/g, '');
-                const [, varName, , filePath] = formatImport.split(' ');
-                // to css extname
-                const cssFile = filePath.replace(path.extname(filePath), '.css');
-                const fullFilePath = path.resolve(dirname(file.path), cssFile);
-                let cssJson = cssJsonCache[fullFilePath];
-                if (cssJson) {
-                  cssJsonMapList.push({
-                    varName,
-                    filePath: cssFile,
-                    json: cssJson,
-                    source: cssImport,
-                  });
-                } else {
-                  // maybe load external css
-                  logger.error(
-                    'maybe you load external css file,not support cssModules',
-                    `"${formatImport}"`,
-                    'at',
-                    `"${file.path}"`
-                  );
-                }
-              }
-              const isTs = isTsFile(file);
-              for (const { varName, filePath, json, source } of cssJsonMapList) {
-                contents = contents.replace(
-                  source,
-                  `import '${filePath}';
-                  const ${varName}${isTs ? ':{[key:string]:string}' : ''}=${JSON.stringify(json)}`
-                );
-              }
-              file.contents = Buffer.from(contents);
-
-              cb(null, file);
-            })
-          )
-        )
         .pipe(gulpIf(isTsFile, tsProject()))
-        .pipe(
-          gulpIf(
-            (f) => isTsOrJsFile(f) && isBrowser(f),
-            // @ts-ignore
-            gulpBabel(browserBabelConfig)
-          )
-        )
-        .pipe(
-          gulpIf(
-            (f) => isTsOrJsFile(f) && !isBrowser(f),
-            // @ts-ignore
-            gulpBabel(nodeBabelConfig)
-          )
-        )
+        .pipe(gulpIf((f) => isTsOrJsFile(f) && isBrowser(f), gulpBabel(browserBabelConfig)))
+        .pipe(gulpIf((f) => isTsOrJsFile(f) && !isBrowser(f), gulpBabel(nodeBabelConfig)))
         .pipe(
           through.obj((file, env, cb) => {
             logger.info(`Transform to ${moduleType} for ${relative(cwd, file.path)}`);
             cb(null, file);
-          })
+          }),
         )
         .pipe(gulpIf((f) => !!config.sourcemaps && isTsOrJsFile(f), sourcemaps.write('.')))
         .pipe(vfs.dest(targetPath))

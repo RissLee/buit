@@ -1,9 +1,14 @@
 import React from 'react';
-import styles from './index.less';
+import less from './index.less';
+import scss from './index.scss';
 import './normal.less';
 
 const Page: React.FC<any> = () => {
-  return <div className={styles.container}>...</div>;
+  return (
+    <div className={less.container}>
+      <div className={scss.content}></div>
+    </div>
+  );
 };
 
 export default Page;

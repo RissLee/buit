@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "outDir": "dist",
     "module": "esnext",
     "target": "esnext",
     "lib": ["esnext", "dom"],
@@ -21,5 +20,5 @@
       "@/*": ["./src/*"]
     }
   },
-  "exclude": ["node_modules", "build", "dist", "scripts", "webpack", "jest"]
+  "exclude": ["node_modules", "build", "dist", "lib", "scripts", "webpack", "jest"]
 }

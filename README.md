@@ -2,9 +2,8 @@
 
 > build src => lib
 
-src(ts/tsx/js/js/less/css...) transform to lib(js/css)
+支持 cssModules 的组件库 compiler
 
-support cssModules
 
 ## Usage
 
@@ -22,22 +21,26 @@ buit build
 
 will be transform `./src`->`./lib`
 
-### build monorepo 
+### build monorepo
 
 ```bash
 buit build package/a
 ```
+
 will be transform `./packages/a/src` -> `./packages/a/lib`
 
-### watch 
+### watch
+
 ```
 buit build -w
 ```
+
 ### cssModules
 
 ```bash
 buit build -cp my-pkg
 ```
+
 ```tsx
 // index.less
 .container{
@@ -54,15 +57,16 @@ export default Page;
 ```
 
 transform to =>
+
 ```jsx
-// index.css
+// index.less
 .my-pkg-container {
   color: brown;
 }
 
 // index.js
 // ...
-require("./index.css");
+require("./index.less");
 
 var styles = {
   "container": "my-pkg-container"
@@ -73,7 +77,7 @@ var Page = function Page() {
     className: styles.container
   }, "...");
 };
-// ... 
+// ...
 
 ```
 

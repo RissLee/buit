@@ -78,42 +78,65 @@ export function getBabelConfig({ config, moduleType }: { config: IConfig; module
     typescript: true,
     react: {},
     env: {
-      targets: config.target === 'browser' ? { browsers: ['last 2 versions', 'IE 10'] } : { node: 10 },
+      targets:
+        config.target === 'browser' ? { browsers: ['last 2 versions', 'IE 10'] } : { node: 10 },
       modules: moduleType === 'esm' ? false : 'auto',
     },
     transformRuntime: config.runtimeHelpers,
   };
+
+  const presets = [[require.resolve('@umijs/babel-preset-umi'), presetOptions]];
+
+  const plugins = [];
+  if (config.cssModules) {
+    plugins.push([
+      'css-modules-transform',
+      {
+        extensions: ['.css', '.scss', '.less', '.sass'],
+        generateScopedName: getGenerateScopedName(config),
+        keepImport: true,
+      },
+    ]);
+  }
+
   return {
-    presets: [[require.resolve('@umijs/babel-preset-umi'), presetOptions], ...(config.extraBabelPresets || [])],
-    plugins: [transformImportLess2Css, ...(config.extraBabelPlugins || [])],
+    presets: [...presets, ...(config.extraBabelPresets || [])],
+    plugins: [...plugins, ...(config.extraBabelPlugins || [])],
   };
 }
 
 // postcss config
-export function getPostcssPlugins({ config, cssJsonCache }: { config: IConfig; cssJsonCache: {} }): any[] {
+export function getPostcssPlugins(config: IConfig): any[] {
   const plugins = [autoprefixer()];
-  const { cssModules } = config;
-  if (cssModules) {
-    // local name
-    let generateScopedName = '[local]__[hash]';
-    if (typeof cssModules === 'object') {
-      if (cssModules.generateScopedName) {
-        generateScopedName = cssModules.generateScopedName;
-      } else if (cssModules.prefix) {
-        generateScopedName = `${cssModules.prefix}-[local]`;
-      }
-    }
+  if (config.cssModules) {
     plugins.push(
       postcssModules({
-        getJSON(cssFileName: string, json: object, _outputFileName: string) {
-          cssJsonCache[cssFileName] = json;
-        },
-        generateScopedName,
-        camelCase: true,
-      })
+        generateScopedName: getGenerateScopedName(config),
+        getJSON() {},
+        ...(config.cssModules as object),
+      }),
     );
   }
   return plugins;
+}
+
+// get cssModules.generateScopedName
+export function getGenerateScopedName(config: IConfig): string {
+  const { cssModules } = config;
+  if (!cssModules) {
+    return '';
+  }
+
+  let generateScopedName = '[local]__[hash]';
+  if (typeof cssModules === 'object') {
+    if (cssModules.generateScopedName) {
+      generateScopedName = cssModules.generateScopedName;
+      // short
+    } else if (cssModules.prefix) {
+      generateScopedName = `${cssModules.prefix}-[local]`;
+    }
+  }
+  return generateScopedName;
 }
 
 function transformImportLess2Css() {
@@ -124,7 +147,7 @@ function transformImportLess2Css() {
         const re = /\.less$/;
         // @ts-ignore
         if (re.test(path.node.source.value)) {
-        // @ts-ignore
+          // @ts-ignore
           path.node.source.value = path.node.source.value.replace(re, '.css');
         }
       },
