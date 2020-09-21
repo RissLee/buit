@@ -34,8 +34,9 @@ export default async function (opts: {
   const targetPath = join(cwd, targetDir);
 
   const tsProject = gulpTs.createProject({ ...omit(tsConfig.compilerOptions, 'outDir') } || {});
-
-  rimraf.sync(targetPath);
+  if (!config.notClean) {
+    rimraf.sync(targetPath);
+  }
 
   function isTsFile({ path }: FileStat) {
     return /\.tsx?$/.test(path);

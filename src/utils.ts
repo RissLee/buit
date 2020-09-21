@@ -30,6 +30,7 @@ export interface IConfig {
   extraBabelPlugins?: any[];
   sourcemaps?: boolean;
   runtimeHelpers?: object;
+  notClean?: boolean;
 }
 
 export const defaultConfig: IConfig = {
